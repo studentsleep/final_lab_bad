@@ -105,6 +105,8 @@ function createCardHTML(p) {
 // 2.1 เรนเดอร์ Carousel (สุ่มมาแสดง 6 ชิ้น)
 function renderCarousel() {
     let container = document.getElementById('carouselContainer');
+    if (!container) return; // เช็คป้องกัน Error
+
     container.innerHTML = '';
     // ดึงสินค้า 6 ชิ้นแรกมาแสดงใน Carousel
     let highlights = products.slice(0, 6);
@@ -119,6 +121,9 @@ function renderCarousel() {
 function renderProductGrid() {
     let grid = document.getElementById('productGrid');
     let controls = document.getElementById('paginationControls');
+
+    if (!grid || !controls) return; // เช็คป้องกัน Error
+
     grid.innerHTML = '';
     controls.innerHTML = '';
 
@@ -202,10 +207,6 @@ function buyProduct() {
     }
 }
 
-// โหลดข้อมูลเริ่มต้น
-renderCarousel();
-renderProductGrid();
-
 
 // ==========================================
 // ข้อ 3: ระบบแปลงสกุลเงิน (Multi-Currency API)
@@ -255,3 +256,11 @@ async function calculateImport() {
         Swal.fire({ icon: 'error', title: 'เชื่อมต่อ API ล้มเหลว', text: 'ไม่สามารถดึงข้อมูลได้ โปรดตรวจสอบอินเทอร์เน็ต' });
     }
 }
+
+// ==========================================
+// สั่งให้ทำงานเมื่อหน้าเว็บโหลดเสร็จ
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+    renderCarousel();
+    renderProductGrid();
+});
