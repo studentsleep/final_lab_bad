@@ -115,12 +115,10 @@ function handleSearchInput() {
     let keyword = document.getElementById('searchInput').value.toLowerCase();
     let suggestionBox = document.getElementById('suggestionBox');
 
-    // ค้นหาสินค้า (ใช้แสดงใน Grid ด้วย)
     filteredProducts = products.filter(p => p.name.toLowerCase().includes(keyword) || p.id.toLowerCase().includes(keyword));
     currentPage = 1;
     renderProductGrid();
 
-    // จัดการ Dropdown แนะนำสินค้า
     if (keyword.length === 0) {
         suggestionBox.classList.add('hidden');
         return;
@@ -146,10 +144,8 @@ function selectSuggestion(id) {
     document.getElementById('productId').value = id;
     document.getElementById('buyQty').value = 1;
 
-    // โฟกัสไปที่ช่องจำนวนให้พร้อมกดเพิ่มลงตะกร้า
     document.getElementById('buyQty').focus();
 
-    // รีเซ็ต Grid ให้แสดงทั้งหมดเหมือนเดิม
     filteredProducts = [...products];
     renderProductGrid();
 }
@@ -194,6 +190,46 @@ function addManualToCart() {
     document.getElementById('buyQty').value = '';
 }
 
+// [เพิ่มใหม่] ฟังก์ชันปรับเพิ่ม-ลดจำนวนในตะกร้า
+function updateCartQty(id, change) {
+    let cartItem = cart.find(item => item.id === id);
+    let product = products.find(p => p.id === id);
+    if (!cartItem || !product) return;
+
+    if (change === 1) {
+        // เช็คว่ากด + เกินสต็อกไหม
+        if (cartItem.qty + 1 > product.stock) {
+            Swal.fire({ icon: 'warning', title: 'สินค้าหมด', text: `สินค้าในสต็อกมีเพียง ${product.stock} ชิ้น` });
+            return;
+        }
+        cartItem.qty += 1;
+        updateCartBadge();
+        renderCart();
+    } else if (change === -1) {
+        // เช็คว่าถ้าลบจนเหลือ 0 ให้เด้งถาม
+        if (cartItem.qty - 1 === 0) {
+            Swal.fire({
+                title: 'ลบสินค้านี้?',
+                text: "คุณต้องการลบสินค้านี้ออกจากตะกร้าใช่หรือไม่",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'ใช่, ลบเลย',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    removeFromCart(id);
+                }
+            });
+        } else {
+            cartItem.qty -= 1;
+            updateCartBadge();
+            renderCart();
+        }
+    }
+}
+
 function removeFromCart(id) {
     cart = cart.filter(item => item.id !== id);
     updateCartBadge();
@@ -216,13 +252,25 @@ function renderCart() {
     cart.forEach(item => {
         let subtotal = item.price * item.qty;
         totalAmount += subtotal;
+
+        // [ปรับปรุง] เปลี่ยนหน้าตาช่องจำนวนเป็นปุ่ม + / -
         cartBody.innerHTML += `
             <tr class="hover:bg-gray-50 transition border-b border-gray-50">
-                <td class="px-4 py-3 font-medium text-gray-800">${item.name} <span class="text-xs text-gray-400">(${item.id})</span></td>
-                <td class="px-4 py-3 text-center text-gray-600">${item.price.toLocaleString()}</td>
-                <td class="px-4 py-3 text-center font-bold text-emerald-600">${item.qty}</td>
-                <td class="px-4 py-3 text-center font-semibold text-gray-800">${subtotal.toLocaleString()}</td>
-                <td class="px-4 py-3 text-center"><button onclick="removeFromCart('${item.id}')" class="text-red-500 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md text-sm">ลบ</button></td>
+                <td class="px-4 py-4 font-medium text-gray-800">${item.name} <div class="text-xs text-gray-400">(${item.id})</div></td>
+                <td class="px-4 py-4 text-center text-gray-600">${item.price.toLocaleString()}</td>
+                
+                <td class="px-4 py-4 text-center">
+                    <div class="flex items-center justify-center space-x-2">
+                        <button onclick="updateCartQty('${item.id}', -1)" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 font-bold flex items-center justify-center transition shadow-sm">-</button>
+                        <span class="w-8 text-center font-bold text-emerald-600 text-lg">${item.qty}</span>
+                        <button onclick="updateCartQty('${item.id}', 1)" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-emerald-100 text-gray-600 hover:text-emerald-600 font-bold flex items-center justify-center transition shadow-sm">+</button>
+                    </div>
+                </td>
+                
+                <td class="px-4 py-4 text-center font-semibold text-gray-800">${subtotal.toLocaleString()}</td>
+                <td class="px-4 py-4 text-center">
+                    <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg text-sm transition">ลบ</button>
+                </td>
             </tr>
         `;
     });
@@ -250,7 +298,6 @@ function checkout() {
     renderProductGrid();
     renderCarousel();
 
-    // เด้งกลับไปหน้า POS เพื่อซื้อของต่อ
     navigateTo('pos');
 }
 

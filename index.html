@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,18 +10,91 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Prompt', sans-serif; overflow-x: hidden; background-color: #f8fafc; }
-        .blob { position: fixed; filter: blur(80px); z-index: -1; opacity: 0.5; animation: moveBlobs 10s infinite alternate; }
-        @keyframes moveBlobs { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.1); } }
-        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
-        .btn-hover-glow:hover { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
-        .page-section { display: none; animation: fadeIn 0.4s ease-in-out; }
-        .page-active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; scroll-behavior: smooth; }
+        body {
+            font-family: 'Prompt', sans-serif;
+            overflow-x: hidden;
+            background-color: #f8fafc;
+        }
+
+        .blob {
+            position: fixed;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.5;
+            animation: moveBlobs 10s infinite alternate;
+        }
+
+        @keyframes moveBlobs {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(50px, 50px) scale(1.1);
+            }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* เพิ่ม Effect ให้การ์ดหน้าแรก */
+        .home-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .home-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .home-card-icon {
+            transition: all 0.4s ease;
+        }
+
+        .home-card:hover .home-card-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .btn-hover-glow:hover {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .page-section {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .page-active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+        }
     </style>
 </head>
+
 <body class="min-h-screen pb-10">
 
     <div class="blob bg-blue-300 w-96 h-96 rounded-full top-0 left-0"></div>
@@ -29,16 +103,22 @@
     <nav class="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100">
         <div class="max-w-6xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
-                <div class="flex items-center cursor-pointer" onclick="navigateTo('home')">
-                    <span class="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-emerald-500">FinalLab-Thanawat</span>
+                <div class="flex items-center cursor-pointer hover:scale-105 transition" onclick="navigateTo('home')">
+                    <span
+                        class="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-emerald-500">FinalLab-Thanawat</span>
                 </div>
                 <div class="flex items-center space-x-1 md:space-x-4">
-                    <button onclick="navigateTo('tax')" class="nav-btn px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 font-medium transition hidden md:block">คำนวณภาษี</button>
-                    <button onclick="navigateTo('pos')" class="nav-btn px-3 py-2 rounded-lg text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 font-medium transition hidden md:block">ซื้อสินค้า</button>
-                    <button onclick="navigateTo('currency')" class="nav-btn px-3 py-2 rounded-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 font-medium transition hidden md:block">แปลงสกุลเงิน</button>
-                    
-                    <button onclick="navigateTo('cart')" class="ml-2 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl transition flex items-center gap-2 border border-emerald-200">
-                        🛒 ตะกร้า <span id="cartBadge" class="bg-emerald-500 text-white rounded-full px-2 py-0.5 text-xs shadow-sm">0</span>
+                    <button onclick="navigateTo('tax')"
+                        class="nav-btn px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 font-medium transition hidden md:block">คำนวณภาษี</button>
+                    <button onclick="navigateTo('pos')"
+                        class="nav-btn px-3 py-2 rounded-lg text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 font-medium transition hidden md:block">ซื้อสินค้า</button>
+                    <button onclick="navigateTo('currency')"
+                        class="nav-btn px-3 py-2 rounded-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 font-medium transition hidden md:block">แปลงสกุลเงิน</button>
+
+                    <button onclick="navigateTo('cart')"
+                        class="ml-2 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl transition flex items-center gap-2 border border-emerald-200 transform hover:scale-105">
+                        🛒 ตะกร้า <span id="cartBadge"
+                            class="bg-emerald-500 text-white rounded-full px-2 py-0.5 text-xs shadow-sm">0</span>
                     </button>
                 </div>
             </div>
@@ -47,41 +127,169 @@
 
     <div class="max-w-6xl mx-auto px-4 mt-8 relative z-10">
 
-        <div id="page-home" class="page-section page-active space-y-10">
-            <div class="text-center space-y-4 pt-10" data-aos="fade-down">
-                <div class="inline-block px-4 py-1.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-blue-600 shadow-sm">Final Lab Assignment 🚀</div>
-                <h1 class="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-indigo-600 to-emerald-500 drop-shadow-sm">ระบบจัดการธุรกิจอัจฉริยะ</h1>
-                <p class="text-gray-600 font-medium max-w-2xl mx-auto">เลือกโมดูลการทำงานที่คุณต้องการจากเมนูด้านล่าง</p>
+        <div id="page-home" class="page-section page-active space-y-12">
+
+            <div class="text-center space-y-6 pt-10 pb-8" data-aos="fade-down">
+                <div
+                    class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white border border-gray-200 text-sm font-semibold text-blue-600 shadow-sm hover:shadow-md transition">
+                    <span class="relative flex h-3 w-3">
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                    </span>
+                    Final Lab Assignment
+                </div>
+                <h1
+                    class="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-indigo-600 to-emerald-500 drop-shadow-sm leading-tight pb-2">
+                    ระบบจัดการธุรกิจอัจฉริยะ
+                </h1>
+                <p class="text-gray-600 font-medium max-w-2xl mx-auto text-lg">
+                    แพลตฟอร์มเครื่องมือช่วยเหลือองค์กรครบวงจร เลือกโมดูลการทำงานที่คุณต้องการเพื่อเริ่มต้นใช้งานได้ทันที
+                </p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10" data-aos="fade-up" data-aos-delay="100">
-                <div onclick="navigateTo('tax')" class="glass-card p-8 rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition cursor-pointer group text-center border-t-4 border-t-blue-500">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">คำนวณภาษี</h3>
-                    <p class="text-sm text-gray-500">คำนวณภาษีหัก ณ ที่จ่ายแบบขั้นบันได</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6" data-aos="fade-up" data-aos-delay="100">
+
+                <div onclick="navigateTo('tax')"
+                    class="home-card glass-card p-8 rounded-3xl shadow-lg cursor-pointer group border-t-4 border-t-blue-500 relative overflow-hidden">
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110">
+                    </div>
+                    <div
+                        class="home-card-icon w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors">
+                        คำนวณภาษี</h3>
+                    <p class="text-gray-500 mb-4 line-clamp-2">ระบบประเมินภาษีหัก ณ ที่จ่ายแบบอัตโนมัติ
+                        ตามหลักเกณฑ์ขั้นบันไดของกรมสรรพากร</p>
+                    <div
+                        class="flex items-center text-blue-600 font-semibold text-sm group-hover:translate-x-2 transition-transform">
+                        ใช้งานโมดูล <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </div>
                 </div>
-                <div onclick="navigateTo('pos')" class="glass-card p-8 rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition cursor-pointer group text-center border-t-4 border-t-emerald-500">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">ซื้อสินค้า (POS)</h3>
-                    <p class="text-sm text-gray-500">ค้นหาสินค้าและเพิ่มลงตะกร้า</p>
+
+                <div onclick="navigateTo('pos')"
+                    class="home-card glass-card p-8 rounded-3xl shadow-lg cursor-pointer group border-t-4 border-t-emerald-500 relative overflow-hidden">
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110">
+                    </div>
+                    <div
+                        class="home-card-icon w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3 group-hover:text-emerald-600 transition-colors">
+                        ซื้อสินค้า (POS)</h3>
+                    <p class="text-gray-500 mb-4 line-clamp-2">ค้นหาสินค้าอย่างรวดเร็ว เพิ่มลงตะกร้า
+                        และจัดการสต็อกคงคลังแบบ Real-time</p>
+                    <div
+                        class="flex items-center text-emerald-600 font-semibold text-sm group-hover:translate-x-2 transition-transform">
+                        ใช้งานโมดูล <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </div>
                 </div>
-                <div onclick="navigateTo('currency')" class="glass-card p-8 rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition cursor-pointer group text-center border-t-4 border-t-purple-500">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">ต้นทุนนำเข้า</h3>
-                    <p class="text-sm text-gray-500">คำนวณต้นทุนสินค้านำเข้า Real-time</p>
+
+                <div onclick="navigateTo('currency')"
+                    class="home-card glass-card p-8 rounded-3xl shadow-lg cursor-pointer group border-t-4 border-t-purple-500 relative overflow-hidden">
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110">
+                    </div>
+                    <div
+                        class="home-card-icon w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3 group-hover:text-purple-600 transition-colors">
+                        ต้นทุนนำเข้า</h3>
+                    <p class="text-gray-500 mb-4 line-clamp-2">เชื่อมต่อ API อัตราแลกเปลี่ยนทั่วโลก
+                        เพื่อคำนวณต้นทุนสินค้านำเข้าอย่างแม่นยำ</p>
+                    <div
+                        class="flex items-center text-purple-600 font-semibold text-sm group-hover:translate-x-2 transition-transform">
+                        ใช้งานโมดูล <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </div>
                 </div>
+
             </div>
         </div>
 
         <div id="page-tax" class="page-section max-w-4xl mx-auto space-y-8">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8 border-b pb-4">📝 ระบบคำนวณภาษีหัก ณ ที่จ่าย</h2>
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8 border-b pb-4">📝 ระบบคำนวณภาษีหัก ณ ที่จ่าย
+            </h2>
+
             <div class="glass-card rounded-3xl shadow-xl p-8">
                 <div class="flex flex-col md:flex-row gap-5 mb-8">
                     <div class="flex-1">
                         <label class="block text-sm font-bold text-gray-700 mb-2">รายได้รวมต่อปี (บาท)</label>
-                        <input type="number" id="incomeInput" placeholder="ตัวอย่าง: 450000" class="w-full px-5 py-4 rounded-2xl border-2 border-gray-100 focus:border-blue-500 outline-none text-lg font-medium">
+                        <input type="number" id="incomeInput" placeholder="ตัวอย่าง: 450000"
+                            class="w-full px-5 py-4 rounded-2xl border-2 border-gray-100 focus:border-blue-500 outline-none text-lg font-medium transition-colors">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="calculateTax()" class="w-full md:w-auto px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg transition">คำนวณภาษี</button>
+                        <button onclick="calculateTax()"
+                            class="w-full md:w-auto px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg transition-transform transform hover:-translate-y-1">
+                            คำนวณภาษี
+                        </button>
                     </div>
                 </div>
-                <div id="taxResult" class="hidden mt-6 p-6 bg-blue-50 border-l-4 border-blue-500 rounded-2xl text-blue-900"></div>
+                <div id="taxResult"
+                    class="hidden mt-6 p-6 bg-blue-50 border-l-4 border-blue-500 rounded-2xl text-blue-900 shadow-inner">
+                </div>
+            </div>
+
+            <div class="glass-card rounded-3xl shadow-lg p-8">
+                <h3 class="font-bold text-xl text-gray-800 mb-6 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    ตารางแสดงอัตราภาษีเงินได้บุคคลธรรมดา
+                </h3>
+                <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+                    <table class="min-w-full text-left bg-white">
+                        <thead class="bg-gradient-to-r from-blue-50 to-blue-100 text-blue-800">
+                            <tr>
+                                <th class="px-6 py-4 font-bold border-b border-blue-200">ขั้นเงินได้สุทธิ (บาท)</th>
+                                <th class="px-6 py-4 font-bold border-b border-blue-200 text-center">อัตราภาษี (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-gray-700">
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 font-medium">0 - 150,000</td>
+                                <td class="px-6 py-4 text-center text-green-600 font-bold bg-green-50/50">ยกเว้น (0%)
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 font-medium">150,001 - 300,000</td>
+                                <td class="px-6 py-4 text-center font-bold">5%</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 font-medium">300,001 - 500,000</td>
+                                <td class="px-6 py-4 text-center font-bold text-orange-500">10%</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 font-medium">500,001 ขึ้นไป</td>
+                                <td class="px-6 py-4 text-center font-bold text-red-500 bg-red-50/50">15%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -92,20 +300,27 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="md:col-span-3 border-b border-gray-100 pb-6 mb-2 relative">
                         <label class="block text-sm font-bold text-gray-700 mb-2">🔍 ค้นหาสินค้า</label>
-                        <input type="text" id="searchInput" onkeyup="handleSearchInput()" placeholder="พิมพ์ชื่อหรือรหัสสินค้าเพื่อค้นหา..." class="w-full px-5 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none">
-                        
-                        <div id="suggestionBox" class="absolute top-full left-0 w-full bg-white rounded-xl shadow-xl border border-gray-100 mt-2 hidden z-50 max-h-60 overflow-y-auto"></div>
+                        <input type="text" id="searchInput" onkeyup="handleSearchInput()"
+                            placeholder="พิมพ์ชื่อหรือรหัสสินค้าเพื่อค้นหา..."
+                            class="w-full px-5 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none transition-colors">
+                        <div id="suggestionBox"
+                            class="absolute top-full left-0 w-full bg-white rounded-xl shadow-2xl border border-gray-100 mt-2 hidden z-50 max-h-60 overflow-y-auto">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">รหัสสินค้า</label>
-                        <input type="text" id="productId" placeholder="เช่น P01" class="w-full px-5 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none uppercase bg-gray-50" readonly>
+                        <input type="text" id="productId" placeholder="เช่น P01"
+                            class="w-full px-5 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none uppercase bg-gray-50"
+                            readonly>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">จำนวน</label>
-                        <input type="number" id="buyQty" placeholder="1" min="1" class="w-full px-5 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none">
+                        <input type="number" id="buyQty" placeholder="1" min="1"
+                            class="w-full px-5 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="addManualToCart()" class="w-full px-8 py-3 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                        <button onclick="addManualToCart()"
+                            class="w-full px-8 py-3 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl shadow-lg transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
                             ➕ เพิ่มลงตะกร้า
                         </button>
                     </div>
@@ -114,15 +329,19 @@
 
             <div class="mb-10 relative">
                 <h3 class="font-bold text-xl text-gray-800 mb-4 flex items-center gap-2">✨ สินค้าไฮไลท์</h3>
-                
-                <button onclick="scrollCarousel(-1)" class="absolute left-0 top-1/2 -mt-4 z-10 bg-white shadow-lg w-10 h-10 rounded-full flex items-center justify-center text-emerald-600 hover:scale-110 transition border border-gray-100 hidden md:flex">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+                <button onclick="scrollCarousel(-1)"
+                    class="absolute left-0 top-1/2 -mt-4 z-10 bg-white shadow-lg w-10 h-10 rounded-full flex items-center justify-center text-emerald-600 hover:bg-emerald-50 hover:scale-110 transition border border-gray-100 hidden md:flex">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7">
+                        </path>
+                    </svg>
                 </button>
-                
                 <div id="carouselContainer" class="flex overflow-x-auto gap-6 pb-4 snap-x no-scrollbar md:px-12"></div>
-
-                <button onclick="scrollCarousel(1)" class="absolute right-0 top-1/2 -mt-4 z-10 bg-white shadow-lg w-10 h-10 rounded-full flex items-center justify-center text-emerald-600 hover:scale-110 transition border border-gray-100 hidden md:flex">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+                <button onclick="scrollCarousel(1)"
+                    class="absolute right-0 top-1/2 -mt-4 z-10 bg-white shadow-lg w-10 h-10 rounded-full flex items-center justify-center text-emerald-600 hover:bg-emerald-50 hover:scale-110 transition border border-gray-100 hidden md:flex">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path>
+                    </svg>
                 </button>
             </div>
 
@@ -137,7 +356,8 @@
             <h2 class="text-3xl font-bold text-gray-800 text-center mb-8 border-b pb-4">🛒 ตะกร้าสินค้าของคุณ</h2>
             <div class="glass-card rounded-3xl shadow-lg p-8">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full text-left bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
+                    <table
+                        class="min-w-full text-left bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
                         <thead class="bg-emerald-50 text-emerald-800">
                             <tr>
                                 <th class="px-4 py-3 font-semibold">สินค้า</th>
@@ -147,13 +367,15 @@
                                 <th class="px-4 py-3 font-semibold text-center">จัดการ</th>
                             </tr>
                         </thead>
-                        <tbody id="cartBody" class="divide-y divide-gray-100">
-                            </tbody>
+                        <tbody id="cartBody" class="divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
-                <div class="mt-8 flex flex-col md:flex-row justify-between items-center bg-gray-50 p-6 rounded-xl border border-gray-200">
-                    <div class="text-xl font-bold text-gray-800">ยอดชำระรวม: <span id="cartTotal" class="text-emerald-600 text-3xl ml-2">0</span> บาท</div>
-                    <button onclick="checkout()" class="mt-4 md:mt-0 px-10 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition flex items-center gap-2 transform hover:scale-105">
+                <div
+                    class="mt-8 flex flex-col md:flex-row justify-between items-center bg-gray-50 p-6 rounded-xl border border-gray-200">
+                    <div class="text-xl font-bold text-gray-800">ยอดชำระรวม: <span id="cartTotal"
+                            class="text-emerald-600 text-3xl ml-2">0</span> บาท</div>
+                    <button onclick="checkout()"
+                        class="mt-4 md:mt-0 px-10 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition flex items-center gap-2 transform hover:scale-105">
                         💳 ยืนยันการชำระเงิน
                     </button>
                 </div>
@@ -166,21 +388,29 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">สกุลเงิน</label>
-                        <select id="currencySelect" class="w-full px-5 py-4 rounded-2xl border-2 border-gray-100 focus:border-purple-500 outline-none font-medium bg-white">
-                            <option value="USD">🇺🇸 USD</option>
-                            <option value="EUR">🇪🇺 EUR</option>
-                            <option value="JPY">🇯🇵 JPY</option>
+                        <select id="currencySelect"
+                            class="w-full px-5 py-4 rounded-2xl border-2 border-gray-100 focus:border-purple-500 outline-none font-medium bg-white transition-colors">
+                            <option value="USD">🇺🇸 USD - ดอลลาร์สหรัฐ</option>
+                            <option value="EUR">🇪🇺 EUR - ยูโร</option>
+                            <option value="JPY">🇯🇵 JPY - เยนญี่ปุ่น</option>
+                            <option value="GBP">🇬🇧 GBP - ปอนด์สเตอร์ลิง</option>
+                            <option value="CNY">🇨🇳 CNY - หยวนจีน</option>
+                            <option value="KRW">🇰🇷 KRW - วอนเกาหลีใต้</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">ราคา</label>
-                        <input type="number" id="foreignAmount" placeholder="100.00" class="w-full px-5 py-4 rounded-2xl border-2 border-gray-100 focus:border-purple-500 outline-none font-medium">
+                        <input type="number" id="foreignAmount" placeholder="100.00"
+                            class="w-full px-5 py-4 rounded-2xl border-2 border-gray-100 focus:border-purple-500 outline-none font-medium transition-colors">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="calculateImport()" class="w-full px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl shadow-lg">คำนวณ</button>
+                        <button onclick="calculateImport()"
+                            class="w-full px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl shadow-lg transition-transform transform hover:-translate-y-1">คำนวณ</button>
                     </div>
                 </div>
-                <div id="importResult" class="hidden mt-6 p-6 bg-purple-50 border-l-4 border-purple-500 rounded-2xl text-purple-900"></div>
+                <div id="importResult"
+                    class="hidden mt-6 p-6 bg-purple-50 border-l-4 border-purple-500 rounded-2xl text-purple-900 shadow-inner">
+                </div>
             </div>
         </div>
 
@@ -190,4 +420,5 @@
     <script>AOS.init({ once: true, offset: 50 });</script>
     <script src="script.js"></script>
 </body>
+
 </html>
