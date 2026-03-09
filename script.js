@@ -11,8 +11,7 @@ function navigateTo(pageId) {
 // ข้อ 1: ระบบคำนวณภาษีหัก ณ ที่จ่าย
 // ==========================================
 function calculateTax() {
-    let incomeInput = document.getElementById('incomeInput');
-    let income = parseFloat(incomeInput.value);
+    let income = parseFloat(document.getElementById('incomeInput').value);
     let resultDiv = document.getElementById('taxResult');
 
     if (isNaN(income) || income < 0) {
@@ -22,38 +21,22 @@ function calculateTax() {
     }
 
     let tax = 0;
-    if (income > 500000) {
-        tax += (income - 500000) * 0.15;
-        tax += (500000 - 300000) * 0.10;
-        tax += (300000 - 150000) * 0.05;
-    } else if (income > 300000) {
-        tax += (income - 300000) * 0.10;
-        tax += (300000 - 150000) * 0.05;
-    } else if (income > 150000) {
-        tax += (income - 150000) * 0.05;
-    }
-
-    let netIncome = income - tax;
+    if (income > 500000) { tax += (income - 500000) * 0.15; tax += 20000; tax += 7500; }
+    else if (income > 300000) { tax += (income - 300000) * 0.10; tax += 7500; }
+    else if (income > 150000) { tax += (income - 150000) * 0.05; }
 
     resultDiv.classList.remove('hidden');
     resultDiv.innerHTML = `
         <h3 class="font-bold text-xl mb-3">สรุปผลการคำนวณภาษี</h3>
-        <div class="flex justify-between border-b border-blue-200 pb-2 mb-2">
-            <span>รายได้รวมทั้งหมด:</span><span class="font-semibold">${income.toLocaleString()} บาท</span>
-        </div>
-        <div class="flex justify-between border-b border-blue-200 pb-2 mb-2 text-red-600">
-            <span>ภาษีที่ต้องชำระ:</span><span class="font-bold">${tax.toLocaleString()} บาท</span>
-        </div>
-        <div class="flex justify-between pt-2 text-green-700 text-xl font-bold">
-            <span>รายได้สุทธิหลังหักภาษี:</span><span>${netIncome.toLocaleString()} บาท</span>
-        </div>
+        <div class="flex justify-between border-b border-blue-200 pb-2 mb-2"><span>รายได้รวมทั้งหมด:</span><span class="font-semibold">${income.toLocaleString()} บาท</span></div>
+        <div class="flex justify-between border-b border-blue-200 pb-2 mb-2 text-red-600"><span>ภาษีที่ต้องชำระ:</span><span class="font-bold">${tax.toLocaleString()} บาท</span></div>
+        <div class="flex justify-between pt-2 text-green-700 text-xl font-bold"><span>รายได้สุทธิหลังหักภาษี:</span><span>${(income - tax).toLocaleString()} บาท</span></div>
     `;
 }
 
 // ==========================================
-// ข้อ 2: ระบบจัดการสต็อกสินค้า & ตะกร้าสินค้า
+// ข้อ 2: ระบบจัดการสต็อกสินค้า & ตะกร้า
 // ==========================================
-
 let products = Array.from({ length: 25 }, (_, i) => {
     let idStr = (i + 1).toString().padStart(2, '0');
     return {
@@ -70,25 +53,20 @@ products[1] = { id: 'P02', name: 'Green Box Salad Set', price: 120, stock: 5, im
 let currentPage = 1;
 const itemsPerPage = 20;
 let filteredProducts = [...products];
-
-// [ใหม่] ตัวแปรเก็บสินค้าในตะกร้า
 let cart = [];
 
+// === ฟังก์ชันสำหรับ UI การ์ดและปุ่มเลื่อน ===
 function createCardHTML(p) {
     let stockClass = p.stock < 10 ? 'text-red-500 bg-red-50' : 'text-emerald-600 bg-emerald-50';
-    // ปิดปุ่มหากของหมด
     let btnHtml = p.stock > 0
         ? `<button onclick="addToCart('${p.id}', 1)" class="w-full py-2 bg-gray-50 text-emerald-600 font-bold hover:bg-emerald-500 hover:text-white transition text-sm border-t">➕ เพิ่มลงตะกร้า</button>`
         : `<button disabled class="w-full py-2 bg-gray-200 text-gray-400 font-bold text-sm border-t cursor-not-allowed">สินค้าหมด</button>`;
 
     return `
         <div class="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden hover:shadow-md transition flex flex-col">
-            <img src="${p.image}" class="w-full h-32 object-cover" alt="${p.name}">
+            <img src="${p.image}" class="w-full h-32 object-cover">
             <div class="p-4 flex-1 flex flex-col">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-bold text-gray-400 uppercase">${p.id}</span>
-                    <span class="text-xs font-semibold px-2 py-1 rounded-md ${stockClass}">เหลือ ${p.stock}</span>
-                </div>
+                <div class="flex justify-between items-start mb-2"><span class="text-xs font-bold text-gray-400">${p.id}</span><span class="text-xs font-semibold px-2 py-1 rounded-md ${stockClass}">เหลือ ${p.stock}</span></div>
                 <h4 class="font-bold text-gray-800 text-sm mb-2 flex-1">${p.name}</h4>
                 <div class="text-lg font-bold text-emerald-600">฿${p.price.toLocaleString()}</div>
             </div>
@@ -97,44 +75,28 @@ function createCardHTML(p) {
     `;
 }
 
-// 2.1 เรนเดอร์ Carousel พร้อมฟังก์ชันเลื่อน (Scroll)
 function renderCarousel() {
     let container = document.getElementById('carouselContainer');
     if (!container) return;
     container.innerHTML = '';
-
-    let highlights = products.slice(0, 6);
-    highlights.forEach(p => {
-        container.innerHTML += `<div class="min-w-[260px] md:min-w-[280px] snap-center">${createCardHTML(p)}</div>`;
-    });
+    products.slice(0, 6).forEach(p => container.innerHTML += `<div class="min-w-[260px] md:min-w-[280px] snap-center">${createCardHTML(p)}</div>`);
 }
 
 function scrollCarousel(direction) {
-    const container = document.getElementById('carouselContainer');
-    const scrollAmount = 300; // ระยะการเลื่อนแต่ละครั้ง
-    container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    document.getElementById('carouselContainer').scrollBy({ left: direction * 300, behavior: 'smooth' });
 }
 
-// 2.2 เรนเดอร์ Grid & Pagination
 function renderProductGrid() {
     let grid = document.getElementById('productGrid');
     let controls = document.getElementById('paginationControls');
     if (!grid || !controls) return;
 
-    grid.innerHTML = '';
-    controls.innerHTML = '';
-
+    grid.innerHTML = ''; controls.innerHTML = '';
     let totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
     if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
 
-    let start = (currentPage - 1) * itemsPerPage;
-    let end = start + itemsPerPage;
-    let paginatedItems = filteredProducts.slice(start, end);
-
-    if (paginatedItems.length === 0) {
-        grid.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">❌ ไม่พบสินค้าที่ค้นหา</div>`;
-        return;
-    }
+    let paginatedItems = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    if (paginatedItems.length === 0) { grid.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">❌ ไม่พบสินค้า</div>`; return; }
 
     paginatedItems.forEach(p => grid.innerHTML += createCardHTML(p));
 
@@ -148,83 +110,109 @@ function renderProductGrid() {
 
 function changePage(page) { currentPage = page; renderProductGrid(); }
 
-function searchProducts() {
+// === ฟังก์ชันค้นหาแบบ Autocomplete ===
+function handleSearchInput() {
     let keyword = document.getElementById('searchInput').value.toLowerCase();
+    let suggestionBox = document.getElementById('suggestionBox');
+
+    // ค้นหาสินค้า (ใช้แสดงใน Grid ด้วย)
     filteredProducts = products.filter(p => p.name.toLowerCase().includes(keyword) || p.id.toLowerCase().includes(keyword));
     currentPage = 1;
     renderProductGrid();
-}
 
-// 2.3 ระบบตะกร้าสินค้า (Cart Logic)
-function addToCart(id, qtyToAdd) {
-    let product = products.find(p => p.id === id);
-    if (!product) {
-        Swal.fire({ icon: 'error', title: 'ไม่พบสินค้า', text: 'รหัสสินค้านี้ไม่มีในระบบ' });
+    // จัดการ Dropdown แนะนำสินค้า
+    if (keyword.length === 0) {
+        suggestionBox.classList.add('hidden');
         return;
     }
 
-    // ตรวจสอบว่าในตะกร้ามีสินค้านี้กี่ชิ้นแล้ว เพื่อบวกเช็คกับสต็อก
+    if (filteredProducts.length > 0) {
+        suggestionBox.innerHTML = filteredProducts.map(p =>
+            `<div onclick="selectSuggestion('${p.id}')" class="px-5 py-3 hover:bg-emerald-50 cursor-pointer flex justify-between items-center border-b border-gray-50">
+                <span class="font-medium text-gray-700">${p.name} <span class="text-xs text-gray-400">(${p.id})</span></span>
+                <span class="text-emerald-600 font-bold">฿${p.price}</span>
+            </div>`
+        ).join('');
+        suggestionBox.classList.remove('hidden');
+    } else {
+        suggestionBox.innerHTML = `<div class="px-5 py-3 text-gray-500">ไม่พบสินค้าที่ค้นหา...</div>`;
+        suggestionBox.classList.remove('hidden');
+    }
+}
+
+function selectSuggestion(id) {
+    document.getElementById('suggestionBox').classList.add('hidden');
+    document.getElementById('searchInput').value = '';
+    document.getElementById('productId').value = id;
+    document.getElementById('buyQty').value = 1;
+
+    // โฟกัสไปที่ช่องจำนวนให้พร้อมกดเพิ่มลงตะกร้า
+    document.getElementById('buyQty').focus();
+
+    // รีเซ็ต Grid ให้แสดงทั้งหมดเหมือนเดิม
+    filteredProducts = [...products];
+    renderProductGrid();
+}
+
+// === ระบบตะกร้าสินค้า ===
+function updateCartBadge() {
+    let totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+    document.getElementById('cartBadge').innerText = totalItems;
+}
+
+function addToCart(id, qtyToAdd) {
+    let product = products.find(p => p.id === id);
+    if (!product) { Swal.fire({ icon: 'error', title: 'ไม่พบสินค้า' }); return; }
+
     let cartItem = cart.find(item => item.id === id);
     let currentQtyInCart = cartItem ? cartItem.qty : 0;
 
     if (currentQtyInCart + qtyToAdd > product.stock) {
-        Swal.fire({ icon: 'warning', title: 'สต็อกไม่พอ', text: `มีสินค้าเหลือให้สั่งเพิ่มได้อีกแค่ ${product.stock - currentQtyInCart} ชิ้น` });
+        Swal.fire({ icon: 'warning', title: 'สต็อกไม่พอ', text: `เหลือให้สั่งได้อีก ${product.stock - currentQtyInCart} ชิ้น` });
         return;
     }
 
-    if (cartItem) {
-        cartItem.qty += qtyToAdd; // ถ้ามีอยู่แล้วให้บวกจำนวน
-    } else {
-        cart.push({ id: product.id, name: product.name, price: product.price, qty: qtyToAdd }); // ถ้ายังไม่มีให้เพิ่มใหม่
-    }
+    if (cartItem) cartItem.qty += qtyToAdd;
+    else cart.push({ id: product.id, name: product.name, price: product.price, qty: qtyToAdd });
 
-    Swal.fire({
-        icon: 'success',
-        title: 'เพิ่มลงตะกร้าแล้ว',
-        text: `${product.name} (${qtyToAdd} ชิ้น)`,
-        timer: 1000,
-        showConfirmButton: false,
-        position: 'top-end',
-        toast: true
-    });
-
+    updateCartBadge();
     renderCart();
+
+    Swal.fire({ icon: 'success', title: 'เพิ่มลงตะกร้าแล้ว', text: `${product.name} (${qtyToAdd} ชิ้น)`, timer: 1000, showConfirmButton: false, position: 'top-end', toast: true });
 }
 
-// การเพิ่มลงตะกร้าจากช่องกรอกเอง
 function addManualToCart() {
     let idInput = document.getElementById('productId').value.trim().toUpperCase();
     let qtyInput = parseInt(document.getElementById('buyQty').value);
 
     if (!idInput || isNaN(qtyInput) || qtyInput <= 0) {
-        Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกรหัสและจำนวนให้ถูกต้อง' });
+        Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณาเลือกรหัสและจำนวนให้ถูกต้อง' });
         return;
     }
-
     addToCart(idInput, qtyInput);
-
     document.getElementById('productId').value = '';
     document.getElementById('buyQty').value = '';
 }
 
 function removeFromCart(id) {
     cart = cart.filter(item => item.id !== id);
+    updateCartBadge();
     renderCart();
 }
 
 function renderCart() {
     let cartBody = document.getElementById('cartBody');
     let cartTotal = document.getElementById('cartTotal');
+    if (!cartBody) return;
 
     if (cart.length === 0) {
-        cartBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500">🛒 ตะกร้าว่างเปล่า ลองเลือกสินค้าด้านล่างดูสิ!</td></tr>`;
+        cartBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-500">🛒 ตะกร้าว่างเปล่า กรุณาเลือกซื้อสินค้า</td></tr>`;
         cartTotal.innerText = '0';
         return;
     }
 
     cartBody.innerHTML = '';
     let totalAmount = 0;
-
     cart.forEach(item => {
         let subtotal = item.price * item.qty;
         totalAmount += subtotal;
@@ -234,45 +222,37 @@ function renderCart() {
                 <td class="px-4 py-3 text-center text-gray-600">${item.price.toLocaleString()}</td>
                 <td class="px-4 py-3 text-center font-bold text-emerald-600">${item.qty}</td>
                 <td class="px-4 py-3 text-center font-semibold text-gray-800">${subtotal.toLocaleString()}</td>
-                <td class="px-4 py-3 text-center">
-                    <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition text-sm">ลบ</button>
-                </td>
+                <td class="px-4 py-3 text-center"><button onclick="removeFromCart('${item.id}')" class="text-red-500 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md text-sm">ลบ</button></td>
             </tr>
         `;
     });
-
     cartTotal.innerText = totalAmount.toLocaleString();
 }
 
-// 2.4 ฟังก์ชันชำระเงิน (ตัดสต็อกทีเดียว)
 function checkout() {
-    if (cart.length === 0) {
-        Swal.fire({ icon: 'warning', title: 'ตะกร้าว่างเปล่า', text: 'กรุณาเพิ่มสินค้าลงตะกร้าก่อนชำระเงิน' });
-        return;
-    }
+    if (cart.length === 0) { Swal.fire({ icon: 'warning', title: 'ตะกร้าว่างเปล่า' }); return; }
 
-    // หักสต็อกออกจากฐานข้อมูล
     cart.forEach(cartItem => {
         let product = products.find(p => p.id === cartItem.id);
         if (product) product.stock -= cartItem.qty;
     });
 
     let totalAmount = document.getElementById('cartTotal').innerText;
-
     Swal.fire({
-        icon: 'success',
-        title: '🎉 ชำระเงินสำเร็จ!',
+        icon: 'success', title: '🎉 ชำระเงินสำเร็จ!',
         html: `ทำรายการสั่งซื้อทั้งหมดเรียบร้อยแล้ว<br><br><span class="text-emerald-600 text-xl font-bold">ยอดรวม: ${totalAmount} บาท</span>`,
         confirmButtonColor: '#10b981'
     });
 
-    // ล้างตะกร้าและอัปเดตหน้าจอ
     cart = [];
+    updateCartBadge();
     renderCart();
-    searchProducts(); // รีเฟรชกริดให้เลขสต็อกอัปเดต
-    renderCarousel(); // รีเฟรชคาร์โรเซล
-}
+    renderProductGrid();
+    renderCarousel();
 
+    // เด้งกลับไปหน้า POS เพื่อซื้อของต่อ
+    navigateTo('pos');
+}
 
 // ==========================================
 // ข้อ 3: ระบบแปลงสกุลเงิน (Multi-Currency API)
@@ -282,10 +262,7 @@ async function calculateImport() {
     let amount = parseFloat(document.getElementById('foreignAmount').value);
     let resultDiv = document.getElementById('importResult');
 
-    if (isNaN(amount) || amount <= 0) {
-        Swal.fire({ icon: 'error', title: 'ข้อมูลไม่ถูกต้อง', text: 'กรุณากรอกราคาสินค้าให้ถูกต้อง' });
-        return;
-    }
+    if (isNaN(amount) || amount <= 0) { Swal.fire({ icon: 'error', title: 'ข้อมูลไม่ถูกต้อง' }); return; }
 
     resultDiv.classList.remove('hidden');
     resultDiv.innerHTML = `<div class="animate-pulse flex space-x-4"><div class="flex-1 space-y-4 py-1"><div class="h-4 bg-purple-200 rounded w-3/4"></div><div class="h-4 bg-purple-200 rounded"></div></div></div>`;
@@ -294,39 +271,28 @@ async function calculateImport() {
         let response = await fetch(`https://api.exchangerate-api.com/v4/latest/${currency}`);
         let data = await response.json();
         let exchangeRate = data.rates.THB;
-
         let baseCostTHB = amount * exchangeRate;
         let importFee = baseCostTHB * 0.03;
-        let netCostTHB = baseCostTHB + importFee;
 
         resultDiv.innerHTML = `
             <h3 class="font-bold text-xl mb-3">สรุปต้นทุนนำเข้า (Real-time)</h3>
-            <div class="flex justify-between border-b border-purple-200 pb-2 mb-2">
-                <span>เรทปัจจุบัน (1 ${currency}):</span><span class="font-semibold">${exchangeRate.toFixed(4)} THB</span>
-            </div>
-            <div class="flex justify-between border-b border-purple-200 pb-2 mb-2">
-                <span>ราคาสินค้า (${amount} ${currency}):</span><span>${baseCostTHB.toLocaleString('th-TH', { minimumFractionDigits: 2 })} บาท</span>
-            </div>
-            <div class="flex justify-between border-b border-purple-200 pb-2 mb-2 text-orange-600">
-                <span>ค่าธรรมเนียมนำเข้า (3%):</span><span>+${importFee.toLocaleString('th-TH', { minimumFractionDigits: 2 })} บาท</span>
-            </div>
-            <div class="flex justify-between pt-2 text-purple-800 text-2xl font-bold">
-                <span>ต้นทุนสุทธิรวม:</span><span>${netCostTHB.toLocaleString('th-TH', { minimumFractionDigits: 2 })} บาท</span>
-            </div>
+            <div class="flex justify-between border-b border-purple-200 pb-2 mb-2"><span>เรทปัจจุบัน (1 ${currency}):</span><span class="font-semibold">${exchangeRate.toFixed(4)} THB</span></div>
+            <div class="flex justify-between border-b border-purple-200 pb-2 mb-2"><span>ราคาสินค้า (${amount} ${currency}):</span><span>${baseCostTHB.toLocaleString('th-TH', { minimumFractionDigits: 2 })} บาท</span></div>
+            <div class="flex justify-between border-b border-purple-200 pb-2 mb-2 text-orange-600"><span>ค่าธรรมเนียมนำเข้า (3%):</span><span>+${importFee.toLocaleString('th-TH', { minimumFractionDigits: 2 })} บาท</span></div>
+            <div class="flex justify-between pt-2 text-purple-800 text-2xl font-bold"><span>ต้นทุนสุทธิรวม:</span><span>${(baseCostTHB + importFee).toLocaleString('th-TH', { minimumFractionDigits: 2 })} บาท</span></div>
         `;
-
     } catch (error) {
-        console.error("Error fetching exchange rate:", error);
         resultDiv.classList.add('hidden');
-        Swal.fire({ icon: 'error', title: 'เชื่อมต่อ API ล้มเหลว', text: 'ไม่สามารถดึงข้อมูลได้ โปรดตรวจสอบอินเทอร์เน็ต' });
+        Swal.fire({ icon: 'error', title: 'เชื่อมต่อ API ล้มเหลว' });
     }
 }
 
 // ==========================================
-// สั่งให้ทำงานเมื่อหน้าเว็บโหลดเสร็จ
+// Initialization
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     renderCarousel();
     renderProductGrid();
-    renderCart(); // โหลดตะกร้าว่างเปล่ารอไว้
+    renderCart();
+    updateCartBadge();
 });
