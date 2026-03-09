@@ -2,17 +2,9 @@
 // ระบบ Navigation (เปลี่ยนหน้า)
 // ==========================================
 function navigateTo(pageId) {
-    // ซ่อนทุกหน้า
-    document.querySelectorAll('.page-section').forEach(el => {
-        el.classList.remove('page-active');
-    });
-    // แสดงหน้าที่เลือก
+    document.querySelectorAll('.page-section').forEach(el => el.classList.remove('page-active'));
     document.getElementById('page-' + pageId).classList.add('page-active');
-
-    // รีเฟรช Animation
-    if (typeof AOS !== 'undefined') {
-        AOS.refresh();
-    }
+    if (typeof AOS !== 'undefined') AOS.refresh();
 }
 
 // ==========================================
@@ -59,18 +51,17 @@ function calculateTax() {
 }
 
 // ==========================================
-// ข้อ 2: ระบบจัดการสต็อกสินค้า (Cards & Pagination)
+// ข้อ 2: ระบบจัดการสต็อกสินค้า & ตะกร้าสินค้า
 // ==========================================
 
-// Mock Data สินค้า 25 ชิ้น (เพื่อทดสอบ Pagination ว่าเกิน 20 ชิ้นจะตัดหน้า)
 let products = Array.from({ length: 25 }, (_, i) => {
     let idStr = (i + 1).toString().padStart(2, '0');
     return {
         id: `P${idStr}`,
-        name: `สินค้าทดสอบ ${idStr} (Product)`,
+        name: `สินค้าทดสอบ ${idStr}`,
         price: Math.floor(Math.random() * 900) + 100,
         stock: Math.floor(Math.random() * 50) + 1,
-        image: `https://picsum.photos/seed/${i + 10}/200/150` // ภาพสุ่มจำลอง
+        image: `https://picsum.photos/seed/${i + 10}/200/150`
     };
 });
 products[0] = { id: 'P01', name: 'Premium Matcha Powder', price: 450, stock: 30, image: 'https://picsum.photos/seed/m1/200/150' };
@@ -78,11 +69,18 @@ products[1] = { id: 'P02', name: 'Green Box Salad Set', price: 120, stock: 5, im
 
 let currentPage = 1;
 const itemsPerPage = 20;
-let filteredProducts = [...products]; // ตัวแปรสำหรับเก็บผลลัพธ์การค้นหา
+let filteredProducts = [...products];
 
-// ฟังก์ชันสร้างการ์ด HTML
+// [ใหม่] ตัวแปรเก็บสินค้าในตะกร้า
+let cart = [];
+
 function createCardHTML(p) {
     let stockClass = p.stock < 10 ? 'text-red-500 bg-red-50' : 'text-emerald-600 bg-emerald-50';
+    // ปิดปุ่มหากของหมด
+    let btnHtml = p.stock > 0
+        ? `<button onclick="addToCart('${p.id}', 1)" class="w-full py-2 bg-gray-50 text-emerald-600 font-bold hover:bg-emerald-500 hover:text-white transition text-sm border-t">➕ เพิ่มลงตะกร้า</button>`
+        : `<button disabled class="w-full py-2 bg-gray-200 text-gray-400 font-bold text-sm border-t cursor-not-allowed">สินค้าหมด</button>`;
+
     return `
         <div class="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden hover:shadow-md transition flex flex-col">
             <img src="${p.image}" class="w-full h-32 object-cover" alt="${p.name}">
@@ -94,40 +92,38 @@ function createCardHTML(p) {
                 <h4 class="font-bold text-gray-800 text-sm mb-2 flex-1">${p.name}</h4>
                 <div class="text-lg font-bold text-emerald-600">฿${p.price.toLocaleString()}</div>
             </div>
-            <button onclick="document.getElementById('productId').value='${p.id}'; document.getElementById('buyQty').value=1;" 
-                class="w-full py-2 bg-gray-50 text-gray-600 font-semibold hover:bg-emerald-500 hover:text-white transition text-sm border-t">
-                เลือกซื้อ
-            </button>
+            ${btnHtml}
         </div>
     `;
 }
 
-// 2.1 เรนเดอร์ Carousel (สุ่มมาแสดง 6 ชิ้น)
+// 2.1 เรนเดอร์ Carousel พร้อมฟังก์ชันเลื่อน (Scroll)
 function renderCarousel() {
     let container = document.getElementById('carouselContainer');
-    if (!container) return; // เช็คป้องกัน Error
-
+    if (!container) return;
     container.innerHTML = '';
-    // ดึงสินค้า 6 ชิ้นแรกมาแสดงใน Carousel
-    let highlights = products.slice(0, 6);
 
+    let highlights = products.slice(0, 6);
     highlights.forEach(p => {
-        // กำหนดความกว้างการ์ดให้เห็นทีละ ~3 ชิ้นในจอ Desktop
-        container.innerHTML += `<div class="min-w-[280px] snap-center">${createCardHTML(p)}</div>`;
+        container.innerHTML += `<div class="min-w-[260px] md:min-w-[280px] snap-center">${createCardHTML(p)}</div>`;
     });
+}
+
+function scrollCarousel(direction) {
+    const container = document.getElementById('carouselContainer');
+    const scrollAmount = 300; // ระยะการเลื่อนแต่ละครั้ง
+    container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
 }
 
 // 2.2 เรนเดอร์ Grid & Pagination
 function renderProductGrid() {
     let grid = document.getElementById('productGrid');
     let controls = document.getElementById('paginationControls');
-
-    if (!grid || !controls) return; // เช็คป้องกัน Error
+    if (!grid || !controls) return;
 
     grid.innerHTML = '';
     controls.innerHTML = '';
 
-    // คำนวณหน้า
     let totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
     if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
 
@@ -140,11 +136,8 @@ function renderProductGrid() {
         return;
     }
 
-    paginatedItems.forEach(p => {
-        grid.innerHTML += createCardHTML(p);
-    });
+    paginatedItems.forEach(p => grid.innerHTML += createCardHTML(p));
 
-    // สร้างปุ่มเปลี่ยนหน้า
     if (totalPages > 1) {
         for (let i = 1; i <= totalPages; i++) {
             let activeClass = i === currentPage ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300';
@@ -153,12 +146,8 @@ function renderProductGrid() {
     }
 }
 
-function changePage(page) {
-    currentPage = page;
-    renderProductGrid();
-}
+function changePage(page) { currentPage = page; renderProductGrid(); }
 
-// 2.3 ฟังก์ชันค้นหา
 function searchProducts() {
     let keyword = document.getElementById('searchInput').value.toLowerCase();
     filteredProducts = products.filter(p => p.name.toLowerCase().includes(keyword) || p.id.toLowerCase().includes(keyword));
@@ -166,45 +155,122 @@ function searchProducts() {
     renderProductGrid();
 }
 
-// 2.4 ฟังก์ชันสั่งซื้อ
-function buyProduct() {
-    let idInput = document.getElementById('productId').value.trim().toUpperCase();
-    let qtyInput = parseInt(document.getElementById('buyQty').value);
-
-    if (!idInput || isNaN(qtyInput) || qtyInput <= 0) {
-        Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกรหัสและจำนวน' });
-        return;
-    }
-
-    let product = products.find(p => p.id === idInput);
-
+// 2.3 ระบบตะกร้าสินค้า (Cart Logic)
+function addToCart(id, qtyToAdd) {
+    let product = products.find(p => p.id === id);
     if (!product) {
         Swal.fire({ icon: 'error', title: 'ไม่พบสินค้า', text: 'รหัสสินค้านี้ไม่มีในระบบ' });
         return;
     }
 
-    if (qtyInput > product.stock) {
-        Swal.fire({ icon: 'error', title: 'สต็อกไม่พอ', text: `มีสินค้าเหลือเพียง ${product.stock} ชิ้น` });
-    } else {
-        product.stock -= qtyInput;
-        Swal.fire({
-            icon: 'success',
-            title: 'ซื้อสำเร็จ!',
-            html: `<div class="text-left mt-2">
-                    <p><b>สินค้า:</b> ${product.name}</p>
-                    <p><b>จำนวน:</b> ${qtyInput} ชิ้น</p>
-                    <hr class="my-2">
-                    <p class="text-lg text-emerald-600"><b>รวม: ${(product.price * qtyInput).toLocaleString()} บาท</b></p>
-                   </div>`
-        });
+    // ตรวจสอบว่าในตะกร้ามีสินค้านี้กี่ชิ้นแล้ว เพื่อบวกเช็คกับสต็อก
+    let cartItem = cart.find(item => item.id === id);
+    let currentQtyInCart = cartItem ? cartItem.qty : 0;
 
-        // อัปเดต UI
-        searchProducts(); // อัปเดต Grid
-        renderCarousel(); // อัปเดต Carousel
-
-        document.getElementById('productId').value = '';
-        document.getElementById('buyQty').value = '';
+    if (currentQtyInCart + qtyToAdd > product.stock) {
+        Swal.fire({ icon: 'warning', title: 'สต็อกไม่พอ', text: `มีสินค้าเหลือให้สั่งเพิ่มได้อีกแค่ ${product.stock - currentQtyInCart} ชิ้น` });
+        return;
     }
+
+    if (cartItem) {
+        cartItem.qty += qtyToAdd; // ถ้ามีอยู่แล้วให้บวกจำนวน
+    } else {
+        cart.push({ id: product.id, name: product.name, price: product.price, qty: qtyToAdd }); // ถ้ายังไม่มีให้เพิ่มใหม่
+    }
+
+    Swal.fire({
+        icon: 'success',
+        title: 'เพิ่มลงตะกร้าแล้ว',
+        text: `${product.name} (${qtyToAdd} ชิ้น)`,
+        timer: 1000,
+        showConfirmButton: false,
+        position: 'top-end',
+        toast: true
+    });
+
+    renderCart();
+}
+
+// การเพิ่มลงตะกร้าจากช่องกรอกเอง
+function addManualToCart() {
+    let idInput = document.getElementById('productId').value.trim().toUpperCase();
+    let qtyInput = parseInt(document.getElementById('buyQty').value);
+
+    if (!idInput || isNaN(qtyInput) || qtyInput <= 0) {
+        Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกรหัสและจำนวนให้ถูกต้อง' });
+        return;
+    }
+
+    addToCart(idInput, qtyInput);
+
+    document.getElementById('productId').value = '';
+    document.getElementById('buyQty').value = '';
+}
+
+function removeFromCart(id) {
+    cart = cart.filter(item => item.id !== id);
+    renderCart();
+}
+
+function renderCart() {
+    let cartBody = document.getElementById('cartBody');
+    let cartTotal = document.getElementById('cartTotal');
+
+    if (cart.length === 0) {
+        cartBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500">🛒 ตะกร้าว่างเปล่า ลองเลือกสินค้าด้านล่างดูสิ!</td></tr>`;
+        cartTotal.innerText = '0';
+        return;
+    }
+
+    cartBody.innerHTML = '';
+    let totalAmount = 0;
+
+    cart.forEach(item => {
+        let subtotal = item.price * item.qty;
+        totalAmount += subtotal;
+        cartBody.innerHTML += `
+            <tr class="hover:bg-gray-50 transition border-b border-gray-50">
+                <td class="px-4 py-3 font-medium text-gray-800">${item.name} <span class="text-xs text-gray-400">(${item.id})</span></td>
+                <td class="px-4 py-3 text-center text-gray-600">${item.price.toLocaleString()}</td>
+                <td class="px-4 py-3 text-center font-bold text-emerald-600">${item.qty}</td>
+                <td class="px-4 py-3 text-center font-semibold text-gray-800">${subtotal.toLocaleString()}</td>
+                <td class="px-4 py-3 text-center">
+                    <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition text-sm">ลบ</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    cartTotal.innerText = totalAmount.toLocaleString();
+}
+
+// 2.4 ฟังก์ชันชำระเงิน (ตัดสต็อกทีเดียว)
+function checkout() {
+    if (cart.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'ตะกร้าว่างเปล่า', text: 'กรุณาเพิ่มสินค้าลงตะกร้าก่อนชำระเงิน' });
+        return;
+    }
+
+    // หักสต็อกออกจากฐานข้อมูล
+    cart.forEach(cartItem => {
+        let product = products.find(p => p.id === cartItem.id);
+        if (product) product.stock -= cartItem.qty;
+    });
+
+    let totalAmount = document.getElementById('cartTotal').innerText;
+
+    Swal.fire({
+        icon: 'success',
+        title: '🎉 ชำระเงินสำเร็จ!',
+        html: `ทำรายการสั่งซื้อทั้งหมดเรียบร้อยแล้ว<br><br><span class="text-emerald-600 text-xl font-bold">ยอดรวม: ${totalAmount} บาท</span>`,
+        confirmButtonColor: '#10b981'
+    });
+
+    // ล้างตะกร้าและอัปเดตหน้าจอ
+    cart = [];
+    renderCart();
+    searchProducts(); // รีเฟรชกริดให้เลขสต็อกอัปเดต
+    renderCarousel(); // รีเฟรชคาร์โรเซล
 }
 
 
@@ -225,10 +291,9 @@ async function calculateImport() {
     resultDiv.innerHTML = `<div class="animate-pulse flex space-x-4"><div class="flex-1 space-y-4 py-1"><div class="h-4 bg-purple-200 rounded w-3/4"></div><div class="h-4 bg-purple-200 rounded"></div></div></div>`;
 
     try {
-        // ใช้ API โดยกำหนด Base เป็นสกุลเงินที่เลือก
         let response = await fetch(`https://api.exchangerate-api.com/v4/latest/${currency}`);
         let data = await response.json();
-        let exchangeRate = data.rates.THB; // เรทเงินบาทไทยเทียบกับสกุลเงินที่เลือก
+        let exchangeRate = data.rates.THB;
 
         let baseCostTHB = amount * exchangeRate;
         let importFee = baseCostTHB * 0.03;
@@ -263,4 +328,5 @@ async function calculateImport() {
 document.addEventListener("DOMContentLoaded", () => {
     renderCarousel();
     renderProductGrid();
+    renderCart(); // โหลดตะกร้าว่างเปล่ารอไว้
 });
